@@ -174,7 +174,7 @@ def chat(
     user: str,
     *,
     temperature: float = 0.2,
-    max_tokens: int = 4096,
+    max_tokens: int = 8192,
     timeout: float = 120.0,
 ) -> str:
     """Single chat completion through an OpenAI-compatible endpoint."""
