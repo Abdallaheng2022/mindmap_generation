@@ -200,10 +200,11 @@ _TREE_CSS = """
 </style>"""
 
 
-def render_mindmap(code, *, json_obj=None, rtl=False, height=460, key="mm"):
-    """Render a mind map as a Mermaid diagram, with an automatic, dependency-free
-    nested-tree fallback if Mermaid cannot load (offline/blocked) or fails."""
+def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
+    """Render a mind map (Mermaid) with zoom + pan + fullscreen controls, and an
+    automatic dependency-free nested-tree fallback if Mermaid can't load/render."""
     safe = json.dumps(code or "", ensure_ascii=False)
+    key_js = json.dumps(key)
     direction = "rtl" if rtl else "ltr"
     fallback = ""
     if json_obj is not None:
@@ -213,26 +214,85 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=460, key="mm"):
     fb_json = json.dumps(_TREE_CSS + fallback, ensure_ascii=False)
 
     tpl = f"""
-    <div dir="{direction}" style="width:100%; overflow:auto; background:#fff;
-         border:1px solid #e6e6f0; border-radius:12px; padding:12px;">
-      <pre class="mermaid" id="m_{key}" style="margin:0;">{_esc(code or '')}</pre>
-      <div id="fb_{key}" style="display:none;"></div>
+    <style>
+      #wrap_{key} {{ position:relative; width:100%; height:{height-16}px; overflow:hidden;
+        background:#fff; border:1px solid #e6e6f0; border-radius:12px; touch-action:none; }}
+      #wrap_{key}:fullscreen {{ height:100vh; border-radius:0; padding:8px; }}
+      #content_{key} {{ transform-origin:0 0; padding:12px; cursor:grab; width:max-content;
+        min-width:100%; }}
+      #content_{key}:active {{ cursor:grabbing; }}
+      #content_{key} svg {{ width:100%; height:auto; max-width:none; }}
+      .mmbar_{key} {{ position:absolute; top:8px; {'left' if rtl else 'right'}:8px; z-index:5;
+        display:flex; gap:4px; background:rgba(255,255,255,.85); border:1px solid #e6e6f0;
+        border-radius:8px; padding:3px; backdrop-filter:blur(4px); }}
+      .mmbar_{key} button {{ width:30px; height:28px; border:1px solid #dcdcec; background:#fff;
+        border-radius:6px; cursor:pointer; font-size:15px; line-height:1; color:#33334d; }}
+      .mmbar_{key} button:hover {{ background:#eef0ff; }}
+      .mmhint_{key} {{ position:absolute; bottom:6px; {'right' if rtl else 'left'}:10px; z-index:5;
+        font:11px Inter,sans-serif; color:#9aa0c7; pointer-events:none; }}
+    </style>
+    <div id="wrap_{key}" dir="{direction}">
+      <div class="mmbar_{key}">
+        <button id="zin_{key}" title="Zoom in">＋</button>
+        <button id="zout_{key}" title="Zoom out">－</button>
+        <button id="zrst_{key}" title="Reset">⟲</button>
+        <button id="zfs_{key}" title="Fullscreen">⛶</button>
+      </div>
+      <div class="mmhint_{key}">scroll = zoom · drag = pan · ⛶ = fullscreen</div>
+      <div id="content_{key}">
+        <pre class="mermaid" id="m_{key}" style="margin:0;">{_esc(code or '')}</pre>
+        <div id="fb_{key}" style="display:none;"></div>
+      </div>
     </div>
     <script>
     (function() {{
-      var code = {safe};
+      var key = {key_js};
       var fbHtml = {fb_json};
-      var box = document.getElementById('m_{key}');
-      var fb  = document.getElementById('fb_{key}');
-      var done = false;
+      var wrap = document.getElementById('wrap_'+key);
+      var content = document.getElementById('content_'+key);
+      var box = document.getElementById('m_'+key);
+      var fb  = document.getElementById('fb_'+key);
+      var done = false, scale = 1, tx = 0, ty = 0, drag = false, ox = 0, oy = 0;
+
+      function apply() {{ content.style.transform =
+        'translate('+tx+'px,'+ty+'px) scale('+scale+')'; }}
+      function zoomAt(f, cx, cy) {{
+        var r = wrap.getBoundingClientRect();
+        if (cx == null) cx = r.width/2; if (cy == null) cy = r.height/2;
+        var ns = Math.min(6, Math.max(0.2, scale*f)), k = ns/scale;
+        tx = cx - k*(cx - tx); ty = cy - k*(cy - ty); scale = ns; apply();
+      }}
+      function reset() {{ scale = 1; tx = 0; ty = 0; apply(); }}
+      function full() {{ try {{
+        if (document.fullscreenElement) document.exitFullscreen();
+        else wrap.requestFullscreen();
+      }} catch (e) {{}} }}
+
+      document.getElementById('zin_'+key).onclick  = function(){{ zoomAt(1.25); }};
+      document.getElementById('zout_'+key).onclick = function(){{ zoomAt(0.8); }};
+      document.getElementById('zrst_'+key).onclick = reset;
+      document.getElementById('zfs_'+key).onclick  = full;
+
+      wrap.addEventListener('wheel', function(e) {{
+        e.preventDefault(); var r = wrap.getBoundingClientRect();
+        zoomAt(e.deltaY < 0 ? 1.1 : 0.9, e.clientX - r.left, e.clientY - r.top);
+      }}, {{ passive:false }});
+      wrap.addEventListener('pointerdown', function(e) {{
+        drag = true; ox = e.clientX - tx; oy = e.clientY - ty;
+        try {{ wrap.setPointerCapture(e.pointerId); }} catch (x) {{}}
+      }});
+      wrap.addEventListener('pointermove', function(e) {{
+        if (!drag) return; tx = e.clientX - ox; ty = e.clientY - oy; apply();
+      }});
+      wrap.addEventListener('pointerup', function(){{ drag = false; }});
+      wrap.addEventListener('pointercancel', function(){{ drag = false; }});
+
       function showFallback() {{
         if (done) return; done = true;
         if (box) box.style.display = 'none';
         fb.innerHTML = fbHtml; fb.style.display = 'block';
       }}
-      function rendered() {{
-        return box && box.querySelector('svg');
-      }}
+      function rendered() {{ return box && box.querySelector('svg'); }}
       function run() {{
         try {{
           mermaid.initialize({{ startOnLoad:false, securityLevel:'loose', theme:'neutral',
@@ -245,18 +305,15 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=460, key="mm"):
       }}
       function load(src, next) {{
         var s = document.createElement('script');
-        s.src = src; s.onload = run; s.onerror = next;
-        document.head.appendChild(s);
+        s.src = src; s.onload = run; s.onerror = next; document.head.appendChild(s);
       }}
-      // try two CDNs, then fall back to the tree
       load('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', function() {{
         load('https://unpkg.com/mermaid@10/dist/mermaid.min.js', showFallback);
       }});
-      // safety timeout: if nothing rendered, show the tree
       setTimeout(function() {{ if (!rendered()) showFallback(); }}, 4000);
     }})();
     </script>"""
-    components.html(tpl, height=height, scrolling=True)
+    components.html(tpl, height=height, scrolling=False)
 
 
 # backwards-compatible alias
@@ -495,9 +552,9 @@ def render_run(run, rid, *, compact=False):
         st.markdown('<span class="demo-note">Demo diagram</span>', unsafe_allow_html=True)
     if res.mermaid_code:
         n = res.mermaid_code.count("\n") + 1
-        cap, per = (560, 26) if compact else (760, 32)
+        cap, per = (620, 30) if compact else (860, 38)
         render_mindmap(res.mermaid_code, json_obj=res.mindmap_json, rtl=run["is_rtl"],
-                       height=min(cap, max(280, per * n)), key=f"mm_{rid}")
+                       height=min(cap, max(360, per * n)), key=f"mm_{rid}")
         d1, d2 = st.columns(2)
         with d1:
             st.download_button("⬇ .mmd", res.mermaid_code,
@@ -698,7 +755,7 @@ def show_map_small(run, key):
     if res.mermaid_code:
         n = res.mermaid_code.count("\n") + 1
         render_mindmap(res.mermaid_code, json_obj=res.mindmap_json, rtl=run["is_rtl"],
-                       height=min(440, max(240, 24 * n)), key=key)
+                       height=min(600, max(340, 30 * n)), key=key)
 
 
 # ---------------------------------------------------------------------------
