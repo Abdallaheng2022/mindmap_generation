@@ -9,7 +9,7 @@ mind map — **with** or **without** the three critics. Every step shows the exa
 prompt sent to the model and the model’s output, and the final mind map is drawn
 as a Mermaid diagram.
 
-* **Models:** Gemini 2.0 Flash · Qwen2.5-7B-Instruct
+* **Models:** Gemini 2.5 Flash · Qwen2.5-7B-Instruct
 * **Languages:** English · Turkish · Arabic (RTL aware)
 * **Three critics:** Local Structure · Global Structure · Factual
 * **Evaluation Lab:** four tabs —
@@ -71,7 +71,7 @@ for the provider(s) you use.
 
 | Provider | Model | Secret | Notes |
 |---|---|---|---|
-| Google | `gemini-2.0-flash` | `GEMINI_API_KEY` | OpenAI-compatible endpoint |
+| Google | `gemini-2.5-flash` | `GEMINI_API_KEY` | OpenAI-compatible endpoint |
 | OpenRouter | `qwen/qwen-2.5-7b-instruct` | `OPENROUTER_API_KEY` | **exact paper model** |
 | DeepInfra | `Qwen/Qwen2.5-7B-Instruct` | `DEEPINFRA_API_KEY` | **exact paper model** |
 | Cerebras | `qwen-3-32b` | `CEREBRAS_API_KEY` | fastest, free tier — **Qwen3, not 2.5-7B** |

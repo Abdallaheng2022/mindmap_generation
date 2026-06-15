@@ -286,7 +286,7 @@ with st.sidebar:
     gen_choice = st.radio(
         "Generation model",
         ["gemini", "qwen", "both"],
-        format_func=lambda f: {"gemini": "Gemini 2.0 Flash",
+        format_func=lambda f: {"gemini": "Gemini 2.5 Flash",
                                "qwen": "Qwen2.5-7B-Instruct",
                                "both": "Both (side by side)"}[f])
 
@@ -299,6 +299,10 @@ with st.sidebar:
                             help="Local · Global · Factual quality gate (AND).")
 
     with st.expander("Advanced", expanded=False):
+        gemini_model = st.text_input(
+            "Gemini model", value="gemini-2.5-flash",
+            help="Editable: Google retires models periodically. "
+                 "gemini-2.0-flash was retired June 2026.")
         util_key_name = st.selectbox(
             "Utility model (repair · critics · Mermaid · QA)",
             list(PROVIDERS.keys()),
@@ -306,13 +310,15 @@ with st.sidebar:
             format_func=lambda k: PROVIDERS[k].label)
         judge_model = st.text_input("Claude judge model", value="claude-sonnet-4-6",
                                     help="Anthropic model string for the quality judge.")
-    util_provider = PROVIDERS[util_key_name]
+    gemini_provider = with_model(PROVIDERS["gemini_flash"], gemini_model.strip() or "gemini-2.5-flash")
+    util_provider = (gemini_provider if util_key_name == "gemini_flash"
+                     else PROVIDERS[util_key_name])
     judge_provider = with_model(PROVIDERS["claude_judge"], judge_model.strip() or "claude-sonnet-4-6")
 
     # which generation providers are active
     gen_providers = []
     if gen_choice in ("gemini", "both"):
-        gen_providers.append(PROVIDERS["gemini_flash"])
+        gen_providers.append(gemini_provider)
     if gen_choice in ("qwen", "both"):
         gen_providers.append(PROVIDERS[qwen_host])
 
@@ -374,7 +380,7 @@ st.session_state.setdefault("comp_records", [])      # comprehension time
 
 
 def family_label(provider):
-    return {"gemini": "Gemini 2.0 Flash", "qwen": "Qwen2.5-7B",
+    return {"gemini": "Gemini 2.5 Flash", "qwen": "Qwen2.5-7B",
             "claude": "Claude"}.get(provider.family, provider.family)
 
 

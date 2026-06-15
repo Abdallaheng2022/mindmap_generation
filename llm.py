@@ -13,7 +13,7 @@ Why not run Qwen-2.5-7B locally (as the notebooks do)?
   OpenAI-compatible inference endpoint.
 
 Provider notes (verified June 2026):
-  * Gemini 2.0 Flash is reachable through Google's OpenAI-compatible endpoint
+  * Gemini Flash is reachable through Google's OpenAI-compatible endpoint
     at https://generativelanguage.googleapis.com/v1beta/openai/ .
   * For the *exact* Qwen2.5-7B-Instruct used in the paper, OpenRouter
     (`qwen/qwen-2.5-7b-instruct`) and DeepInfra (`Qwen/Qwen2.5-7B-Instruct`)
@@ -45,12 +45,13 @@ class Provider:
 PROVIDERS: dict[str, Provider] = {
     "gemini_flash": Provider(
         key="gemini_flash",
-        label="Gemini 2.0 Flash  ·  Google",
+        label="Gemini 2.5 Flash  ·  Google",
         family="gemini",
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         secret_name="GEMINI_API_KEY",
-        notes="Google AI Studio key. Free tier available.",
+        notes="Google AI Studio key. Free tier available. (gemini-2.0-flash was "
+              "retired June 2026; 2.5-flash is the stable successor.)",
     ),
     "qwen_openrouter": Provider(
         key="qwen_openrouter",

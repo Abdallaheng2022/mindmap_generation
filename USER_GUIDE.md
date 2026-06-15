@@ -63,7 +63,7 @@ You only need the key(s) for the provider(s) you actually use.
 
 | Provider | Model used | Secret name | Where to get the key |
 |---|---|---|---|
-| Google AI Studio | `gemini-2.0-flash` | `GEMINI_API_KEY` | https://aistudio.google.com/apikey |
+| Google AI Studio | `gemini-2.5-flash` | `GEMINI_API_KEY` | https://aistudio.google.com/apikey |
 | OpenRouter | `qwen/qwen-2.5-7b-instruct` (exact paper model) | `OPENROUTER_API_KEY` | https://openrouter.ai/keys |
 | DeepInfra | `Qwen/Qwen2.5-7B-Instruct` (exact paper model) | `DEEPINFRA_API_KEY` | https://deepinfra.com/dash/api_keys |
 | Cerebras | `qwen-3-32b` (fast, free tier — **not** 2.5-7B) | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai |
@@ -99,7 +99,7 @@ Everything you configure is in the left sidebar.
 
 - **Language** — English, Turkish, or Arabic. Changing it reloads the matching
   example paragraph; Arabic switches the input box to right-to-left.
-- **Generation model** — Gemini 2.0 Flash or Qwen2.5-7B-Instruct. This is the
+- **Generation model** — Gemini 2.5 Flash or Qwen2.5-7B-Instruct. This is the
   model that produces the first mind map from your text.
 - **Qwen host** (only if you picked Qwen) — OpenRouter or DeepInfra serve the
   exact Qwen2.5-7B; Cerebras serves the faster Qwen3-32B instead.
@@ -219,7 +219,7 @@ OpenAI-compatible endpoint**, which needs no GPU and runs fine on the free tier.
 - **Exact Qwen2.5-7B-Instruct** → OpenRouter or DeepInfra.
 - **Cerebras** → fastest, free tier, but serves **Qwen3** (`qwen-3-32b`), not
   Qwen2.5-7B. Use it only if a hosted Qwen3 is acceptable for your comparison.
-- **Gemini 2.0 Flash** → Google’s OpenAI-compatible endpoint.
+- **Gemini 2.5 Flash** → Google’s OpenAI-compatible endpoint.
 
 ---
 
@@ -285,7 +285,7 @@ shown as-is (mixed direction is normal there).
 starts fresh. Download anything you need to keep before refreshing.
 
 **Changing the model name.** Model strings live in `llm.py` under `PROVIDERS`
-(e.g. swap `gemini-2.0-flash` for a newer Gemini, or point a provider at a
+(e.g. swap `gemini-2.5-flash` for a newer Gemini, or point a provider at a
 different Qwen build). Edit there and restart.
 
 ---
@@ -314,7 +314,7 @@ data otherwise, and all accumulate results into a running percentage.
 ### Generating for both models and from dataset samples (tab ①)
 
 - **Generation model** in the sidebar now has a third option, **Both (side by
-  side)**. With it selected, one click produces two runs — Gemini 2.0 Flash and
+  side)**. With it selected, one click produces two runs — Gemini 2.5 Flash and
   Qwen — which appear next to each other for direct comparison.
 - **Dataset sample picker**: choose a **Wiki40B** or **SQuAD** sample (filtered
   to the current language and labelled by domain, length band, and word count),
