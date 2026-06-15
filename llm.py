@@ -84,6 +84,18 @@ PROVIDERS: dict[str, Provider] = {
         notes="Cerebras serves Qwen3, not Qwen2.5-7B. Very fast, free tier.",
         exact_qwen25=False,
     ),
+    "qwen_hf": Provider(
+        key="qwen_hf",
+        label="Qwen2.5-7B-Instruct  ·  HuggingFace Inference (router)",
+        family="qwen",
+        base_url="https://router.huggingface.co/v1",
+        model="Qwen/Qwen2.5-7B-Instruct:auto",
+        secret_name="HF_TOKEN",
+        notes="HF Inference Providers router (OpenAI-compatible). ':auto' lets HF "
+              "route to whichever provider hosts the model. Free monthly credit, "
+              "then pay-as-you-go at provider rates.",
+        exact_qwen25=True,
+    ),
     "qwen_custom": Provider(
         key="qwen_custom",
         label="Qwen2.5-7B  ·  Custom server (any OpenAI-compatible URL)",
