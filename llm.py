@@ -84,6 +84,17 @@ PROVIDERS: dict[str, Provider] = {
         notes="Cerebras serves Qwen3, not Qwen2.5-7B. Very fast, free tier.",
         exact_qwen25=False,
     ),
+    "qwen_custom": Provider(
+        key="qwen_custom",
+        label="Qwen2.5-7B  ·  Custom server (any OpenAI-compatible URL)",
+        family="qwen",
+        base_url="",                       # the user fills this in the sidebar
+        model="Qwen/Qwen2.5-7B-Instruct",
+        secret_name="CUSTOM_API_KEY",
+        notes="Point at any hosted OpenAI-compatible endpoint that serves the "
+              "exact Qwen2.5-7B (DeepInfra, Together, Novita, Hyperbolic, HF, etc.).",
+        exact_qwen25=True,
+    ),
     "claude_judge": Provider(
         key="claude_judge",
         label="Claude Sonnet 4  ·  Anthropic  (judge)",
@@ -100,6 +111,17 @@ def with_model(provider: "Provider", model: str) -> "Provider":
     """Return a copy of a provider with a different model string."""
     from dataclasses import replace
     return replace(provider, model=model)
+
+
+def with_endpoint(provider: "Provider", *, base_url: str = None, model: str = None) -> "Provider":
+    """Return a copy of a provider with a different base_url and/or model."""
+    from dataclasses import replace
+    changes = {}
+    if base_url:
+        changes["base_url"] = base_url
+    if model:
+        changes["model"] = model
+    return replace(provider, **changes) if changes else provider
 
 
 class LLMError(RuntimeError):

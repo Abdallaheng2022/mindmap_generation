@@ -35,7 +35,7 @@ import prompts
 import demo as demo_mod
 import samples as S
 import evaluation as E
-from llm import PROVIDERS, resolve_api_key, with_model
+from llm import PROVIDERS, resolve_api_key, with_model, with_endpoint
 from pipeline import run_pipeline
 
 st.set_page_config(page_title="Mind-Map Generation & Evaluation Lab",
@@ -291,9 +291,17 @@ with st.sidebar:
                                "both": "Both (side by side)"}[f])
 
     qwen_host = st.selectbox(
-        "Qwen host", ["qwen_openrouter", "qwen_deepinfra", "qwen_cerebras"],
+        "Qwen host", ["qwen_openrouter", "qwen_deepinfra", "qwen_cerebras", "qwen_custom"],
         format_func=lambda k: PROVIDERS[k].label,
         disabled=(gen_choice == "gemini"))
+    qwen_base_url = ""
+    if qwen_host == "qwen_custom":
+        qwen_base_url = st.text_input(
+            "Server base URL (OpenAI-compatible)",
+            placeholder="https://api.deepinfra.com/v1/openai",
+            help="e.g. DeepInfra: https://api.deepinfra.com/v1/openai · "
+                 "Together: https://api.together.xyz/v1 · "
+                 "HF router: https://router.huggingface.co/v1")
 
     use_critics = st.toggle("Use the three critics", value=True,
                             help="Local · Global · Factual quality gate (AND).")
@@ -316,8 +324,11 @@ with st.sidebar:
                                     help="Anthropic model string for the quality judge.")
     gemini_provider = with_model(PROVIDERS["gemini_flash"], gemini_model.strip() or "gemini-2.5-flash")
     qwen_provider = PROVIDERS[qwen_host]
-    if qwen_model_override.strip():
-        qwen_provider = with_model(qwen_provider, qwen_model_override.strip())
+    if qwen_host == "qwen_custom" or qwen_model_override.strip() or qwen_base_url.strip():
+        qwen_provider = with_endpoint(
+            qwen_provider,
+            base_url=qwen_base_url.strip() or None,
+            model=qwen_model_override.strip() or None)
     if util_key_name == "gemini_flash":
         util_provider = gemini_provider
     elif util_key_name == qwen_host:
