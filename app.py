@@ -291,7 +291,8 @@ with st.sidebar:
                                "both": "Both (side by side)"}[f])
 
     qwen_host = st.selectbox(
-        "Qwen host", ["qwen_openrouter", "qwen_hf", "qwen_deepinfra", "qwen_cerebras", "qwen_custom"],
+        "Qwen host", ["qwen_openrouter", "qwen_together", "qwen_hf", "qwen_deepinfra",
+                      "qwen_cerebras", "qwen_custom"],
         format_func=lambda k: PROVIDERS[k].label,
         disabled=(gen_choice == "gemini"))
     qwen_base_url = ""

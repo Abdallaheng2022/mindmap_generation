@@ -84,16 +84,29 @@ PROVIDERS: dict[str, Provider] = {
         notes="Cerebras serves Qwen3, not Qwen2.5-7B. Very fast, free tier.",
         exact_qwen25=False,
     ),
+    "qwen_together": Provider(
+        key="qwen_together",
+        label="Qwen2.5-7B-Instruct-Turbo  ·  Together AI (free signup credit)",
+        family="qwen",
+        base_url="https://api.together.xyz/v1",
+        model="Qwen/Qwen2.5-7B-Instruct-Turbo",
+        secret_name="TOGETHER_API_KEY",
+        notes="Together gives free signup credit (no credit card). Hosts the exact "
+              "Qwen2.5-7B (Turbo = FP8). Cheap enough that the free credit covers "
+              ">1000 requests. Key from api.together.xyz.",
+        exact_qwen25=True,
+    ),
     "qwen_hf": Provider(
         key="qwen_hf",
         label="Qwen2.5-7B-Instruct  ·  HuggingFace Inference (router)",
         family="qwen",
         base_url="https://router.huggingface.co/v1",
-        model="Qwen/Qwen2.5-7B-Instruct:auto",
+        model="Qwen/Qwen2.5-7B-Instruct:novita",
         secret_name="HF_TOKEN",
-        notes="HF Inference Providers router (OpenAI-compatible). ':auto' lets HF "
-              "route to whichever provider hosts the model. Free monthly credit, "
-              "then pay-as-you-go at provider rates.",
+        notes="HF Inference Providers router (OpenAI-compatible). Pick a provider via "
+              "the ':provider' suffix — this model is served by novita, hyperbolic, "
+              "together, fireworks-ai, sambanova, groq, etc. (':auto' is NOT accepted). "
+              "Free monthly HF credit, then pay-as-you-go at provider rates.",
         exact_qwen25=True,
     ),
     "qwen_custom": Provider(
