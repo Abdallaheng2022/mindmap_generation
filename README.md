@@ -72,7 +72,7 @@ for the provider(s) you use.
 | Provider | Model | Secret | Notes |
 |---|---|---|---|
 | Google | `gemini-2.5-flash` | `GEMINI_API_KEY` | OpenAI-compatible endpoint |
-| OpenRouter | `qwen/qwen-2.5-7b-instruct` | `OPENROUTER_API_KEY` | **exact paper model** |
+| OpenRouter | `qwen/qwen-2.5-7b-instruct:free` | `OPENROUTER_API_KEY` | **exact paper model** |
 | DeepInfra | `Qwen/Qwen2.5-7B-Instruct` | `DEEPINFRA_API_KEY` | **exact paper model** |
 | Cerebras | `qwen-3-32b` | `CEREBRAS_API_KEY` | fastest, free tier — **Qwen3, not 2.5-7B** |
 | Anthropic | `claude-sonnet-4-6` | `ANTHROPIC_API_KEY` | Claude judge for the five quality criteria |

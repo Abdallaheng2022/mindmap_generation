@@ -55,12 +55,13 @@ PROVIDERS: dict[str, Provider] = {
     ),
     "qwen_openrouter": Provider(
         key="qwen_openrouter",
-        label="Qwen2.5-7B-Instruct  ·  OpenRouter  (exact paper model)",
+        label="Qwen2.5-7B-Instruct  ·  OpenRouter  (free tier)",
         family="qwen",
         base_url="https://openrouter.ai/api/v1",
-        model="qwen/qwen-2.5-7b-instruct",
+        model="qwen/qwen-2.5-7b-instruct:free",
         secret_name="OPENROUTER_API_KEY",
-        notes="Serves the exact Qwen2.5-7B-Instruct from the paper.",
+        notes="Exact Qwen2.5-7B from the paper, free variant (':free' = no credits, "
+              "rate-limited ~20/min). Drop ':free' if you have OpenRouter credits.",
         exact_qwen25=True,
     ),
     "qwen_deepinfra": Provider(

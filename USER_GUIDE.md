@@ -64,7 +64,7 @@ You only need the key(s) for the provider(s) you actually use.
 | Provider | Model used | Secret name | Where to get the key |
 |---|---|---|---|
 | Google AI Studio | `gemini-2.5-flash` | `GEMINI_API_KEY` | https://aistudio.google.com/apikey |
-| OpenRouter | `qwen/qwen-2.5-7b-instruct` (exact paper model) | `OPENROUTER_API_KEY` | https://openrouter.ai/keys |
+| OpenRouter | `qwen/qwen-2.5-7b-instruct:free` (exact paper model) | `OPENROUTER_API_KEY` | https://openrouter.ai/keys |
 | DeepInfra | `Qwen/Qwen2.5-7B-Instruct` (exact paper model) | `DEEPINFRA_API_KEY` | https://deepinfra.com/dash/api_keys |
 | Cerebras | `qwen-3-32b` (fast, free tier — **not** 2.5-7B) | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai |
 

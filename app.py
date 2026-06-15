@@ -303,6 +303,10 @@ with st.sidebar:
             "Gemini model", value="gemini-2.5-flash",
             help="Editable: Google retires models periodically. "
                  "gemini-2.0-flash was retired June 2026.")
+        qwen_model_override = st.text_input(
+            "Qwen model override (optional)", value="",
+            help="Leave blank to use the host default. OpenRouter free: "
+                 "qwen/qwen-2.5-7b-instruct:free  ·  paid: drop ':free'.")
         util_key_name = st.selectbox(
             "Utility model (repair · critics · Mermaid · QA)",
             list(PROVIDERS.keys()),
@@ -311,8 +315,15 @@ with st.sidebar:
         judge_model = st.text_input("Claude judge model", value="claude-sonnet-4-6",
                                     help="Anthropic model string for the quality judge.")
     gemini_provider = with_model(PROVIDERS["gemini_flash"], gemini_model.strip() or "gemini-2.5-flash")
-    util_provider = (gemini_provider if util_key_name == "gemini_flash"
-                     else PROVIDERS[util_key_name])
+    qwen_provider = PROVIDERS[qwen_host]
+    if qwen_model_override.strip():
+        qwen_provider = with_model(qwen_provider, qwen_model_override.strip())
+    if util_key_name == "gemini_flash":
+        util_provider = gemini_provider
+    elif util_key_name == qwen_host:
+        util_provider = qwen_provider
+    else:
+        util_provider = PROVIDERS[util_key_name]
     judge_provider = with_model(PROVIDERS["claude_judge"], judge_model.strip() or "claude-sonnet-4-6")
 
     # which generation providers are active
@@ -320,7 +331,7 @@ with st.sidebar:
     if gen_choice in ("gemini", "both"):
         gen_providers.append(gemini_provider)
     if gen_choice in ("qwen", "both"):
-        gen_providers.append(PROVIDERS[qwen_host])
+        gen_providers.append(qwen_provider)
 
     st.markdown("---")
     st.markdown("#### API keys")
