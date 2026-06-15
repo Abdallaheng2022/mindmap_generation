@@ -153,6 +153,20 @@ class LLMError(RuntimeError):
     pass
 
 
+# Gemini 2.5+ enables "thinking" by default, which changes output behaviour vs the
+# Gemini 2.0 Flash the thesis was tuned on (it can summarise/lose detail). For 2.5
+# Flash / Flash-Lite this can be turned off via reasoning_effort="none". Set to None
+# to leave thinking on. (Cannot be disabled for 2.5 Pro or 3.x — we skip those.)
+GEMINI_REASONING_EFFORT: Optional[str] = "none"
+
+
+def _gemini_extra(provider: "Provider"):
+    if (provider.family == "gemini" and GEMINI_REASONING_EFFORT
+            and provider.model.lower().startswith("gemini-2.5-flash")):
+        return {"extra_body": {"reasoning_effort": GEMINI_REASONING_EFFORT}}
+    return {}
+
+
 def chat(
     provider: Provider,
     api_key: str,
@@ -186,6 +200,7 @@ def chat(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            **_gemini_extra(provider),
         )
     except Exception as exc:
         raise LLMError(f"{provider.label} request failed: {exc}") from exc

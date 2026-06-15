@@ -369,6 +369,13 @@ with st.sidebar:
             "Gemini model", value="gemini-2.5-flash",
             help="Editable: Google retires models periodically. "
                  "gemini-2.0-flash was retired June 2026.")
+        gemini_think = st.toggle(
+            "Gemini 2.5 'thinking'", value=False,
+            help="Off (default) disables reasoning so 2.5-Flash behaves like the "
+                 "2.0-Flash the thesis used — avoids summarising / dropping facts. "
+                 "Turn on only if you want the model to reason first.")
+        import llm as _llm
+        _llm.GEMINI_REASONING_EFFORT = None if gemini_think else "none"
         qwen_model_override = st.text_input(
             "Qwen model override (optional)", value="",
             help="Leave blank to use the host default. OpenRouter free: "
