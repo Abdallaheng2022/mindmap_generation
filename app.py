@@ -200,9 +200,12 @@ _TREE_CSS = """
 </style>"""
 
 
-def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
-    """Render a mind map (Mermaid) with zoom + pan + fullscreen controls, and an
-    automatic dependency-free nested-tree fallback if Mermaid can't load/render."""
+def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm", style=None):
+    """Render a mind map with zoom + pan + fullscreen. style='tree' shows the clean,
+    always-reliable nested tree; style='diagram' shows the Mermaid diagram (with the
+    tree as automatic fallback if Mermaid can't load/render)."""
+    if style is None:
+        style = st.session_state.get("map_style", "tree")
     safe = json.dumps(code or "", ensure_ascii=False)
     key_js = json.dumps(key)
     direction = "rtl" if rtl else "ltr"
@@ -212,6 +215,14 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
     if not fallback:
         fallback = _tree_html_from_mermaid(code, rtl)
     fb_json = json.dumps(_TREE_CSS + fallback, ensure_ascii=False)
+    tree_mode = (style == "tree")
+    # In tree mode show the tree immediately; in diagram mode show the mermaid <pre>.
+    content_inner = (
+        f'<div id="fb_{key}">{_TREE_CSS}{fallback}</div>'
+        if tree_mode else
+        f'<pre class="mermaid" id="m_{key}" style="margin:0;">{_esc(code or "")}</pre>'
+        f'<div id="fb_{key}" style="display:none;"></div>'
+    )
 
     tpl = f"""
     <style>
@@ -240,8 +251,7 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
       </div>
       <div class="mmhint_{key}">scroll = zoom · drag = pan · ⛶ = fullscreen</div>
       <div id="content_{key}">
-        <pre class="mermaid" id="m_{key}" style="margin:0;">{_esc(code or '')}</pre>
-        <div id="fb_{key}" style="display:none;"></div>
+        {content_inner}
       </div>
     </div>
     <script>
@@ -253,6 +263,7 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
       var box = document.getElementById('m_'+key);
       var fb  = document.getElementById('fb_'+key);
       var done = false, scale = 1, tx = 0, ty = 0, drag = false, ox = 0, oy = 0;
+      var treeMode = {str(tree_mode).lower()};
 
       function apply() {{ content.style.transform =
         'translate('+tx+'px,'+ty+'px) scale('+scale+')'; }}
@@ -307,10 +318,12 @@ def render_mindmap(code, *, json_obj=None, rtl=False, height=520, key="mm"):
         var s = document.createElement('script');
         s.src = src; s.onload = run; s.onerror = next; document.head.appendChild(s);
       }}
-      load('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', function() {{
-        load('https://unpkg.com/mermaid@10/dist/mermaid.min.js', showFallback);
-      }});
-      setTimeout(function() {{ if (!rendered()) showFallback(); }}, 4000);
+      if (!treeMode) {{
+        load('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js', function() {{
+          load('https://unpkg.com/mermaid@10/dist/mermaid.min.js', showFallback);
+        }});
+        setTimeout(function() {{ if (!rendered()) showFallback(); }}, 4000);
+      }}
     }})();
     </script>"""
     components.html(tpl, height=height, scrolling=False)
@@ -363,6 +376,13 @@ with st.sidebar:
 
     use_critics = st.toggle("Use the three critics", value=True,
                             help="Local · Global · Factual quality gate (AND).")
+
+    st.session_state["map_style"] = st.radio(
+        "Map view", ["tree", "diagram"], horizontal=True,
+        format_func=lambda s: {"tree": "Tree (readable)",
+                               "diagram": "Diagram (Mermaid)"}[s],
+        help="Tree is clean and always renders. Diagram draws the Mermaid mind map "
+             "(falls back to the tree if the CDN is blocked).")
 
     with st.expander("Advanced", expanded=False):
         gemini_model = st.text_input(
