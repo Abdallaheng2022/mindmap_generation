@@ -189,10 +189,17 @@ def chat(
         raise LLMError(f"No API key provided for {provider.label}.")
 
     client = OpenAI(base_url=provider.base_url, api_key=api_key, timeout=timeout)
+    # Match the research notebooks: for Gemini the system prompt and the input text
+    # were concatenated into ONE user turn (full_prompt = system + "\n\n" + user),
+    # NOT sent as a separate system role. Sending the long instructions as a Gemini
+    # system_instruction makes 2.5 treat them "high-level" and summarise / drop facts.
     messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": user})
+    if provider.family == "gemini" and system:
+        messages.append({"role": "user", "content": f"{system}\n\n{user}"})
+    else:
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": user})
 
     try:
         resp = client.chat.completions.create(

@@ -262,7 +262,7 @@ def run_pipeline(
                role="Generation", model_label=gen_provider.label,
                system_prompt=sys_prompt, user_prompt=input_text)
     try:
-        gen.output = chat(gen_provider, gen_key, sys_prompt, input_text)
+        gen.output = chat(gen_provider, gen_key, sys_prompt, input_text, temperature=0.1)
     except Exception as exc:
         gen.error = str(exc)
     res.steps.append(gen)
